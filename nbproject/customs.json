@@ -1,0 +1,12 @@
+{
+    "elements": {
+        "template": {},
+        "dom-module": {
+            "attributes": {
+                "id": {}
+            }
+        },
+        "toothfairy-app": {}
+    },
+    "attributes": {}
+}

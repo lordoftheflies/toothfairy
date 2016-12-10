@@ -3,7 +3,11 @@
   "description": "Application for designing specific modification 3D model.",
   "main": "index.html",
   "dependencies": {
-    "polymer": "Polymer/polymer#^1.4.0"
+    "polymer": "Polymer/polymer#^1.4.0",
+    "file-upload": "lordoftheflies/file-upload#^1.7.2",
+    "paper-progress": "polymerelements/paper-progress#^1.0.11",
+    "babylonjs": "^2.5.0",
+    "iron-resizable-behavior": "PolymerElements/iron-resizable-behavior#^1.0.5"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",

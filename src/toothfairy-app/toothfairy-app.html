@@ -1,27 +1,100 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-resizable-behavior/iron-resizable-behavior.html">
 
 <dom-module id="toothfairy-app">
-  <template>
-    <style>
-      :host {
-        display: block;
-      }
-    </style>
-    <h2>Hello [[prop1]]</h2>
-  </template>
+    <template>
+        <style>
+            :host {
+                display: block;
+                overflow: hidden;
+                width   : 100%;
+                height  : 100%;
+                margin  : 0;
+                padding : 0;
+            }
 
-  <script>
-    Polymer({
+            #renderCanvas {
+                width   : 100%;
+                height  : 100%;
+                touch-action: none;
+            }
+        </style>
+        <h2>Hello [[prop1]]</h2>
 
-      is: 'toothfairy-app',
+        <canvas id="renderCanvas"></canvas>
+    </template>
 
-      properties: {
-        prop1: {
-          type: String,
-          value: 'toothfairy-app',
-        },
-      },
+    <script src="../../bower_components/babylonjs/dist/babylon.2.5.js"></script>
 
-    });
-  </script>
+    <script>
+        Polymer({
+            is: 'toothfairy-app',
+            behaviors: [
+                Polymer.IronResizableBehavior
+            ],
+            properties: {
+                engine: {
+                    type: Object
+                },
+                scene: {
+                    type: Object
+                }
+            },
+            observers: [
+                'observeScene(scene, engine)'
+            ],
+            listeners: {
+                'iron-resize': '_onResize'
+            },
+            attached: function () {
+                // load the Babylon 3D engine
+                this.engine = new BABYLON.Engine(this.$.renderCanvas, true);
+
+                this.createScreen(this.engine);
+
+                this.async(this.notifyResize, 1);
+            },
+            observeScene: function (scene, engine) {
+                console.debug('Application start render loop.');
+                engine.runRenderLoop(function () {
+                    scene.render();
+                });
+            },
+            createScreen: function (engine) {
+                console.debug('Application create screen');
+
+                // create a basic BJS Scene object
+                this.scene = new BABYLON.Scene(engine);
+
+                // Change the scene background color to green.
+//                this.scene.clearColor = new BABYLON.Color3(0, 0, 0);
+
+                // create a FreeCamera, and set its position to (x:0, y:5, z:-10)
+                this.camera = new BABYLON.FreeCamera('camera1', new BABYLON.Vector3(0, 5, -10), this.scene);
+
+                // target the camera to scene origin
+                this.camera.setTarget(BABYLON.Vector3.Zero());
+
+                // attach the camera to the canvas
+                this.camera.attachControl(this.$.renderCanvas, false);
+
+                // create a basic light, aiming 0,1,0 - meaning, to the sky
+                this.light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, 0), this.scene);
+                // Dim the light a small amount
+                this.light.intensity = 0.5;
+                // create a built-in "sphere" shape; its constructor takes 5 params: name, width, depth, subdivisions, scene
+                this.sphere = BABYLON.Mesh.CreateSphere('sphere1', 16, 2, this.scene);
+
+                // move the sphere upward 1/2 of its height
+                this.sphere.position.y = 1;
+
+                // create a built-in "ground" shape; its constructor takes the same 5 params as the sphere's one
+                this.ground = BABYLON.Mesh.CreateGround('ground1', 6, 6, 4, this.scene);
+            },
+            _onResize: function () {
+                if (this.engine)
+                    this.engine.resize();
+            }
+        });
+    </script>
 </dom-module>
