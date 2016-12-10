@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>toothfairy-app test</title>
+
+    <script src="../../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../../web-component-tester/browser.js"></script>
+
+    <link rel="import" href="../../src/toothfairy-app/toothfairy-app.html">
+  </head>
+  <body>
+    <test-fixture id="basic">
+      <template>
+        <toothfairy-app></toothfairy-app>
+      </template>
+    </test-fixture>
+
+    <script>
+      suite('toothfairy-app', function() {
+        test('instantiating the element works', function() {
+          var element = fixture('basic');
+          assert.equal(element.is, 'toothfairy-app');
+        });
+      });
+    </script>
+  </body>
+</html>

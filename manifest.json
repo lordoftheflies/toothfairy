@@ -1,0 +1,7 @@
+{
+  "name": "toothfairy",
+  "short_name": "toothfairy",
+  "description": "Application for designing specific modification 3D model.",
+  "start_url": "/",
+  "display": "standalone"
+}
