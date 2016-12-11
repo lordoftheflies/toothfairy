@@ -1,11 +1,13 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/iron-resizable-behavior/iron-resizable-behavior.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/file-upload/file-upload.html">
 
 <dom-module id="toothfairy-app">
     <template>
         <style>
             :host {
-                display: block;
+                display: inline-block;
                 overflow: hidden;
                 width   : 100%;
                 height  : 100%;
@@ -19,7 +21,9 @@
                 touch-action: none;
             }
         </style>
-        <h2>Hello [[prop1]]</h2>
+        <div>
+            <file-upload droppable raised accept="application/sla" target="http://localhost:3000">Choose bodymodel</file-upload>
+        </div>
 
         <canvas id="renderCanvas"></canvas>
     </template>
@@ -38,13 +42,19 @@
                 },
                 scene: {
                     type: Object
-                }
+                },
+                path: {
+                    type: String,
+                    notify: true,
+                    value: 'sample.stl'
+                },
             },
             observers: [
-                'observeScene(scene, engine)'
+                'observeScene(scene, engine, path)'
             ],
             listeners: {
-                'iron-resize': '_onResize'
+                'iron-resize': '_onResize',
+                'before-upload': '_onBeforeUpload'
             },
             attached: function () {
                 // load the Babylon 3D engine
@@ -54,11 +64,27 @@
 
                 this.async(this.notifyResize, 1);
             },
-            observeScene: function (scene, engine) {
+            observeScene: function (scene, engine, path) {
+
+                var canvas = this.$.renderCanvas;
+
+//                if (path) {
+//                    console.debug('Application start render loop from', path);
+//
+//                    BABYLON.SceneLoader.Load('/temp/', path, engine, function (newScene) {
+//                        newScene.activeCamera.attachControl(canvas, false);
+//                        engine.runRenderLoop(function () {
+//                            newScene.render();
+//                        });
+//                    });
+//                } else {
                 console.debug('Application start render loop.');
+
                 engine.runRenderLoop(function () {
                     scene.render();
                 });
+
+//                }
             },
             createScreen: function (engine) {
                 console.debug('Application create screen');
@@ -70,7 +96,10 @@
 //                this.scene.clearColor = new BABYLON.Color3(0, 0, 0);
 
                 // create a FreeCamera, and set its position to (x:0, y:5, z:-10)
-                this.camera = new BABYLON.FreeCamera('camera1', new BABYLON.Vector3(0, 5, -10), this.scene);
+//                this.camera = new BABYLON.FreeCamera('camera1', new BABYLON.Vector3(0, 5, -10), this.scene);
+
+                //Adding an Arc Rotate Camera
+                this.camera = new BABYLON.ArcRotateCamera("Camera", 0, 0.8, 100, BABYLON.Vector3.Zero(), this.scene);
 
                 // target the camera to scene origin
                 this.camera.setTarget(BABYLON.Vector3.Zero());
@@ -79,8 +108,10 @@
                 this.camera.attachControl(this.$.renderCanvas, false);
 
                 // create a basic light, aiming 0,1,0 - meaning, to the sky
-                this.light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, 0), this.scene);
-                // Dim the light a small amount
+//        this.light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, 0), this.scene);
+                //Adding a light
+                this.light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(20, 20, 100), this.scene);
+// Dim the light a small amount
                 this.light.intensity = 0.5;
                 // create a built-in "sphere" shape; its constructor takes 5 params: name, width, depth, subdivisions, scene
                 this.sphere = BABYLON.Mesh.CreateSphere('sphere1', 16, 2, this.scene);
@@ -94,7 +125,27 @@
             _onResize: function () {
                 if (this.engine)
                     this.engine.resize();
-            }
+            },
+            _onBeforeUpload: function (event, details) {
+                console.log(event);
+                console.log(details);
+            },
+            /**
+             * Clicks the invisible file input
+             */
+//    _fileChange: function () {
+//        var elem = this.$.fileInput;
+//
+//        var tokens = this.$.fileInput.value.split('\\');
+//        var fileName = tokens[tokens.length - 1];
+//        console.log('Select file', fileName);
+//        this.path = fileName;
+////        if (elem && document.createEvent) { // sanity check
+////            var evt = document.createEvent("MouseEvents");
+////            evt.initEvent("click", true, false);
+////            elem.dispatchEvent(evt);
+////        }
+//    },
         });
     </script>
 </dom-module>

@@ -1,0 +1,30 @@
+{
+  "name": "toothfairy-local-server",
+  "version": "1.0.0",
+  "description": "Local NodeJS server for the application.",
+  "main": "server.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "test",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lordoftheflies/toothfairy.git"
+  },
+  "keywords": [
+    "server"
+  ],
+  "author": "lordoftheflies",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lordoftheflies/toothfairy/issues"
+  },
+  "homepage": "https://github.com/lordoftheflies/toothfairy#readme",
+  "dependencies": {
+    "express": "^4.14.0",
+    "formidable": "^1.0.17"
+  }
+}

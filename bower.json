@@ -7,7 +7,8 @@
     "file-upload": "lordoftheflies/file-upload#^1.7.2",
     "paper-progress": "polymerelements/paper-progress#^1.0.11",
     "babylonjs": "^2.5.0",
-    "iron-resizable-behavior": "PolymerElements/iron-resizable-behavior#^1.0.5"
+    "iron-resizable-behavior": "PolymerElements/iron-resizable-behavior#^1.0.5",
+    "paper-button": "polymerelements/paper-button#^1.0.14"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
