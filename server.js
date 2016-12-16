@@ -1,6 +1,9 @@
 var express = require("express");
 var multer = require('multer');
 var jsonfile = require('jsonfile')
+var fs = require('fs');
+var path = require('path');
+
 var app = express();
 var storage = multer.diskStorage({
     destination: function (req, file, callback) {
@@ -65,8 +68,27 @@ app.use(function (req, res, next) {
     next();
 });
 
+app.get('/list', function (req, res) {
+
+    var dir = __dirname + "/temp";
+    var result = new Array();
+    console.log('list files ...');
+    fs.readdir(dir, (err, files) => {
+        files.forEach(file => {
+            console.log('-', file);
+            if (file.indexOf('manifest') === -1) result.push(file);
+        });
+
+        console.log('Result', result);
+        res.writeHead(200, {"Content-Type": "application/json"});
+        var json = JSON.stringify(result);
+        res.end(json);
+    })
+
+});
+
 //
-app.get('/:fileName', function (req, res) {
+app.get('/file/:fileName', function (req, res) {
     var fileName = req.params.fileName;
 
     var file = __dirname + "/temp/" + fileName;
@@ -85,7 +107,7 @@ app.put('/upload', type, function (req, res) {
 //    console.log(req);
     console.log(req.file.originalname);
 //    console.log(req.file.originalname);
-//    res.json(req.file[0]); 
+
 //    
 //    upload(req, res, function (err) {
 //        if (err) {
@@ -93,7 +115,7 @@ app.put('/upload', type, function (req, res) {
 //            return res.end("Error uploading file.");
 //        }
 //        console.log("File is uploaded");
-//        res.end("File is uploaded");
+
 //    });
 
     /** When using the "single"
@@ -111,8 +133,21 @@ app.put('/upload', type, function (req, res) {
 //    var dest = fs.createWriteStream(target_path);
 //    src.pipe(dest);
 //    src.on('end', function () {
-//        console.log("File is uploaded");
-//        res.render('complete');
+    console.log("File is uploaded");
+
+    res.writeHead(200, {"Content-Type": "application/json"});
+    var json = JSON.stringify({
+        name: req.file.originalname
+    });
+    res.end(json);
+
+
+//    res.writeHead(200);
+//    res.write(req.file.originalname);
+//
+//    res.end("File is uploaded");
+//    res.sendFile(req.file[0]);
+
 //    });
 //    src.on('error', function (err) {
 //        console.error('Error uploading file.', err);
