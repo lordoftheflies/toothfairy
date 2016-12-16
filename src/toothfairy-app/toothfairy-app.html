@@ -2,9 +2,12 @@
 <link rel="import" href="../../bower_components/app-layout/app-header-layout/app-header-layout.html">
 <link rel="import" href="../../bower_components/app-layout/app-header/app-header.html">
 <link rel="import" href="../../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
+<link rel="import" href="../../bower_components/app-layout/app-drawer/app-drawer.html">
 <link rel="import" href="../../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../../bower_components/iron-resizable-behavior/iron-resizable-behavior.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
@@ -30,27 +33,38 @@
                 touch-action: none;
             }
         </style>
-        <app-header-layout fullbleed class="layout horizontal">
-            <app-header fixed condenses effects="waterfall">
-                <app-toolbar class="layout horizontal">
-                    <div main-title>Toothfairy</div>
-                    <div class="flex"></div>
-                    <div id="uploadPanel" class="layout horizontal" hidden>
-                        <file-upload id="uploader" droppable raised multi="false" accept="application/sla" target="http://localhost:3000/upload">Choose bodymodel</file-upload>
-                        <paper-icon-button icon="toothfairy-icons:arrow-back" on-tap="_backToMain"></paper-icon-button>
+        <iron-ajax url="http://localhost:3000/list" last-response="{{files}}" auto></iron-ajax>
+        <app-drawer-layout fullbleed>
+            <app-drawer>
+                <template is="dom-repeat" items="[[files]]">
+                    <div>
+                        [[item]]
                     </div>
-                    <div id="actionsPanel" class="layout horizontal">
-                        <paper-icon-button icon="toothfairy-icons:file-upload" on-tap="_showUpload"></paper-icon-button>
-                        <paper-toggle-button checked="{{debugBabylon}}">Debug</paper-toggle-button>
+                </template>
+            </app-drawer>
+            <app-header-layout class="layout horizontal">
+                <app-header fixed condenses effects="waterfall">
+                    <app-toolbar class="layout horizontal">
+                        <paper-icon-button icon="toothfairy-icons:menu" drawer-toggle></paper-icon-button>
+                        <div main-title>Toothfairy</div>
+                        <div class="flex"></div>
+                        <div id="uploadPanel" class="layout horizontal" hidden>
+                            <file-upload id="uploader" droppable raised multi="false" accept="application/sla" target="http://localhost:3000/upload">Choose bodymodel</file-upload>
+                            <paper-icon-button icon="toothfairy-icons:arrow-back" on-tap="_backToMain"></paper-icon-button>
+                        </div>
+                        <div id="actionsPanel" class="layout horizontal">
+                            <paper-icon-button icon="toothfairy-icons:file-upload" on-tap="_showUpload"></paper-icon-button>
+                            <paper-toggle-button checked="{{debugBabylon}}">Debug</paper-toggle-button>
+                        </div>
+                    </app-toolbar>
+                </app-header>
+                <div class="layout horizontal flex">
+                    <div class="layout vertical flex">
+                        <canvas id="renderCanvas" hidden="[[_canvasVisibilityIndicator]]"></canvas>
                     </div>
-                </app-toolbar>
-            </app-header>
-            <div class="layout horizontal flex">
-                <div class="layout vertical flex">
-                    <canvas id="renderCanvas" hidden="[[_canvasVisibilityIndicator]]"></canvas>
                 </div>
-            </div>
-        </app-header-layout>
+            </app-header-layout>
+        </app-drawer-layout>
     </template>
 
     <!--<script src="../../bower_components/babylonjs/dist/babylon.2.5.js"></script>-->
@@ -114,7 +128,7 @@ Polymer({
     },
 
     _observePath: function (assetsManager, path) {
-        
+
         this.fire('babylon-load', {
             path: path
         });
@@ -138,7 +152,7 @@ Polymer({
 
         this.scene = new BABYLON.Scene(this.engine);
 
-        this.camera = new BABYLON.ArcRotateCamera("Camera", 0, 0.8, 1000, BABYLON.Vector3.Zero(), this.scene);
+        this.camera = new BABYLON.ArcRotateCamera("Camera", 0, 0.8, 20, BABYLON.Vector3.Zero(), this.scene);
         this.camera.attachControl(this.$.renderCanvas, false);
 
         var light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(20, 20, 100), this.scene);
@@ -149,8 +163,8 @@ Polymer({
 
         this.assetsManager = new BABYLON.AssetsManager(this.scene);
         var self = this;
-        
-        
+
+
         this.assetsManager.onFinish = function (tasks) {
             console.debug('Assets loaded.');
             self.fire('babylon-start', {});
