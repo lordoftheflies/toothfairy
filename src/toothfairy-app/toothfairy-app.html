@@ -2,6 +2,7 @@
 <link rel="import" href="../../bower_components/app-layout/app-header-layout/app-header-layout.html">
 <link rel="import" href="../../bower_components/app-layout/app-header/app-header.html">
 <link rel="import" href="../../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../../bower_components/iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
@@ -13,7 +14,7 @@
 
 <dom-module id="toothfairy-app">
     <template>
-        <style include="iron-flex iron-flex-align">
+        <style include="iron-flex iron-flex-alignment">
             :host {
                 display: inline-block;
                 overflow: hidden;
@@ -32,11 +33,14 @@
         <app-header-layout fullbleed class="layout horizontal">
             <app-header fixed condenses effects="waterfall">
                 <app-toolbar class="layout horizontal">
-                    <!--<file-upload droppable raised multi="false" accept="application/sla" target="http://localhost:3000/upload">Choose bodymodel</file-upload>-->
                     <div main-title>Toothfairy</div>
                     <div class="flex"></div>
-                    <div class="layout horizontal">
-                        <paper-icon-button icon="toothfairy-icons:file-upload"></paper-icon-button>
+                    <div id="uploadPanel" class="layout horizontal" hidden>
+                        <file-upload droppable raised multi="false" accept="application/sla" target="http://localhost:3000/upload">Choose bodymodel</file-upload>
+                        <paper-icon-button icon="toothfairy-icons:arrow-back" on-tap="_backToMain"></paper-icon-button>
+                    </div>
+                    <div id="actionsPanel" class="layout horizontal">
+                        <paper-icon-button icon="toothfairy-icons:file-upload" on-tap="_showUpload"></paper-icon-button>
                         <paper-toggle-button checked="{{debugBabylon}}">Debug</paper-toggle-button>
                     </div>
                 </app-toolbar>
@@ -80,12 +84,12 @@ Polymer({
         }
     },
     observers: [
-        'observeScene(engine, path)',
+//        'observeScene(engine, path)',
         '_observeDebuggerIndicator(debugBabylon)'
     ],
     listeners: {
         'iron-resize': '_onResize',
-        'success': '_onBeforeUpload'
+        'success': '_onUploadSuccess'
     },
     attached: function () {
         // load the Babylon 3D engine
@@ -132,46 +136,8 @@ Polymer({
             });
         };
         assetsManager.load();
-        // create a basic BJS Scene object
-//                this.scene = new BABYLON.Scene(this.engine);
-//                this.createScreen(this.engine, this.scene);
-//                var self = this;
-//                console.debug('Application start render loop from', this.path);
-////                BABYLON.SceneLoader.Load('http://localhost:3000/', this.path, this.engine, function (newScene) {
-////                    console.log(newScene);
-//////                    });
-////                    self.scene = newScene;
-////                    self.createScreen(self.engine, newScene);
-////////
-////////                    BABYLON.SceneLoader.Load('/temp/', path, engine, function (newScene) {
-//////                    newScene.activeCamera.attachControl(canvas, false);
-////                    self.engine.runRenderLoop(function () {
-////                        newScene.render();
-////                    });
-////                });
-//
-//                var assetsManager = new BABYLON.AssetsManager(this.scene);
-////                var meshTask = assetsManager.addMeshTask("model task", "sample", "/temp/", "sample.stl");
-//                var meshTask = assetsManager.addMeshTask("model task", "sample", "/temp/", "skull.babylon");
-//                meshTask.onSuccess = function (task) {
-//                        task.loadedMeshes[0].position = BABYLON.Vector3.Zero();
-//                }
-////                // Move the light with the camera
-////                this.scene.registerBeforeRender(function () {
-////                    self.light.position = self.camera.position;
-////                });
-//
-//                assetsManager.onFinish = function (tasks) {
-//                    console.log('Assetmanager finished loading.');
-//                    self.engine.runRenderLoop(function () {
-//                        self.scene.render();
-//                    });
-//                };
-//
-//                console.log('Assetmanager loading ' + this.path + ' ...');
-//                assetsManager.load();
 
-//                this.async(this.notifyResize, 1);
+        this.async(this.notifyResize, 1);
     },
 
     _observeDebuggerIndicator: function (debugBabylon) {
@@ -182,37 +148,7 @@ Polymer({
             } else {
                 this.scene.debugLayer.hide();
             }
-//            this.debugBabylon = false;
         }
-    },
-
-    observeScene: function (engine, path) {
-
-//                var self = this;
-//                var canvas = this.$.renderCanvas;
-
-//                if (path) {
-//                console.debug('Application start render loop from', path);
-//                BABYLON.SceneLoader.Load('http://localhost:3000/', path, engine, function (newScene) {
-//                    console.log(newScene);
-////                    });
-//                    self.scene = newScene;
-//                    self.createScreen(engine, newScene);
-//////
-//////                    BABYLON.SceneLoader.Load('/temp/', path, engine, function (newScene) {
-////                    newScene.activeCamera.attachControl(canvas, false);
-//                    engine.runRenderLoop(function () {
-//                        newScene.render();
-//                    });
-//                });
-//                } else {
-//                console.debug('Application start render loop.');
-
-//                engine.runRenderLoop(function () {
-//                    self.scene.render();
-//                });
-//
-//                }
     },
     createScreen: function (engine, scene) {
         console.debug('Application create screen');
@@ -257,14 +193,22 @@ Polymer({
         // create a built-in "ground" shape; its constructor takes the same 5 params as the sphere's one
         this.ground = BABYLON.Mesh.CreateGround('ground1', 6, 6, 4, scene);
     },
+    _showUpload: function () {
+        this.$.uploadPanel.hidden = false;
+        this.$.actionsPanel.hidden = true;
+    },
+    _backToMain: function () {
+        this.$.uploadPanel.hidden = true;
+        this.$.actionsPanel.hidden = false;
+    },
     _onResize: function () {
         if (this.engine)
             this.engine.resize();
     },
-//            _onBeforeUpload: function (event, details) {
-//                console.log(event);
-//                console.log(details);
-//            },
+    _onUploadSuccess: function (event, details) {
+//        console.debug(event);
+        console.debug(details);
+    },
     /**
      * Clicks the invisible file input
      */
