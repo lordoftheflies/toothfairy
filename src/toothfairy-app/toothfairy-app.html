@@ -1,11 +1,19 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/app-layout/app-header-layout/app-header-layout.html">
+<link rel="import" href="../../bower_components/app-layout/app-header/app-header.html">
+<link rel="import" href="../../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../../bower_components/iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../../bower_components/file-upload/file-upload.html">
+
+<link rel="import" href="../toothfairy-icons.html">
 
 <dom-module id="toothfairy-app">
     <template>
-        <style>
+        <style include="iron-flex iron-flex-align">
             :host {
                 display: inline-block;
                 overflow: hidden;
@@ -21,118 +29,245 @@
                 touch-action: none;
             }
         </style>
-        <div>
-            <file-upload droppable raised accept="application/sla" target="http://localhost:3000">Choose bodymodel</file-upload>
-        </div>
-
-        <canvas id="renderCanvas"></canvas>
+        <app-header-layout fullbleed class="layout horizontal">
+            <app-header fixed condenses effects="waterfall">
+                <app-toolbar class="layout horizontal">
+                    <!--<file-upload droppable raised multi="false" accept="application/sla" target="http://localhost:3000/upload">Choose bodymodel</file-upload>-->
+                    <div main-title>Toothfairy</div>
+                    <div class="flex"></div>
+                    <div class="layout horizontal">
+                        <paper-icon-button icon="toothfairy-icons:file-upload"></paper-icon-button>
+                        <paper-toggle-button checked="{{debugBabylon}}">Debug</paper-toggle-button>
+                    </div>
+                </app-toolbar>
+            </app-header>
+            <div class="layout horizontal flex">
+                <div class="layout vertical flex">
+                    <canvas id="renderCanvas"></canvas>
+                </div>
+            </div>
+        </app-header-layout>
     </template>
 
-    <script src="../../bower_components/babylonjs/dist/babylon.2.5.js"></script>
+    <!--<script src="../../bower_components/babylonjs/dist/babylon.2.5.js"></script>-->
+    <script src="../../babylon.custom.js"></script>
 
     <script>
-        Polymer({
-            is: 'toothfairy-app',
-            behaviors: [
-                Polymer.IronResizableBehavior
-            ],
-            properties: {
-                engine: {
-                    type: Object
-                },
-                scene: {
-                    type: Object
-                },
-                path: {
-                    type: String,
-                    notify: true,
-                    value: 'sample.stl'
-                },
-            },
-            observers: [
-                'observeScene(scene, engine, path)'
-            ],
-            listeners: {
-                'iron-resize': '_onResize',
-                'before-upload': '_onBeforeUpload'
-            },
-            attached: function () {
-                // load the Babylon 3D engine
-                this.engine = new BABYLON.Engine(this.$.renderCanvas, true);
+Polymer({
+    is: 'toothfairy-app',
+    behaviors: [
+        Polymer.IronResizableBehavior
+    ],
+    properties: {
+        engine: {
+            type: Object
+        },
+        scene: {
+            type: Object
+        },
+        camera: {
+            type: Object
+        },
+        path: {
+            type: String,
+            notify: true,
+            value: 'sample.stl'
+        },
+        debugBabylon: {
+            type: Boolean,
+            notify: true,
+            value: false
+        }
+    },
+    observers: [
+        'observeScene(engine, path)',
+        '_observeDebuggerIndicator(debugBabylon)'
+    ],
+    listeners: {
+        'iron-resize': '_onResize',
+        'success': '_onBeforeUpload'
+    },
+    attached: function () {
+        // load the Babylon 3D engine
+        this.engine = new BABYLON.Engine(this.$.renderCanvas, true);
 
-                this.createScreen(this.engine);
+        this.scene = new BABYLON.Scene(this.engine);
+        // Adding a light
+        var light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(20, 20, 100), this.scene);
+        // Adding an Arc Rotate Camera
+        this.camera = new BABYLON.ArcRotateCamera("Camera", 0, 0.8, 1000, BABYLON.Vector3.Zero(), this.scene);
+        this.camera.attachControl(this.$.renderCanvas, false);
 
-                this.async(this.notifyResize, 1);
-            },
-            observeScene: function (scene, engine, path) {
 
-                var canvas = this.$.renderCanvas;
+//                this.createScreen(engine, scene);
+        var self = this;
+//                BABYLON.SceneLoader.Load('/temp/', 'sample.stl', engine, function (newScene) {
+//                    console.log(newScene);
+////                    });
+//                    self.scene = newScene;
+//                    self.createScreen(engine, newScene);
+//////
+//////                    BABYLON.SceneLoader.Load('/temp/', path, engine, function (newScene) {
+////                    self.camera.attachControl(canvas, false);
+//                    engine.runRenderLoop(function () {
+//                        newScene.render();
+//                    });
+//                });
+        var assetsManager = new BABYLON.AssetsManager(this.scene);
+        var meshTask = assetsManager.addMeshTask("asset task", "", "temp/", "sample.stl");
+        meshTask.onSuccess = function (task) {
+            console.debug('Asset:', task);
+                task.loadedMeshes[0].position = BABYLON.Vector3.Zero();
+        }
+        // Move the light with the camera
+        this.scene.registerBeforeRender(function () {
+            light.position = self.camera.position;
+        });
+        var canvas = this.$.renderCanvas;
+        assetsManager.onFinish = function (tasks) {
+            console.debug('Assets loaded.');
+            self.scene.activeCamera.attachControl(canvas, false);
+            self.engine.runRenderLoop(function () {
+                self.scene.render();
+            });
+        };
+        assetsManager.load();
+        // create a basic BJS Scene object
+//                this.scene = new BABYLON.Scene(this.engine);
+//                this.createScreen(this.engine, this.scene);
+//                var self = this;
+//                console.debug('Application start render loop from', this.path);
+////                BABYLON.SceneLoader.Load('http://localhost:3000/', this.path, this.engine, function (newScene) {
+////                    console.log(newScene);
+//////                    });
+////                    self.scene = newScene;
+////                    self.createScreen(self.engine, newScene);
+////////
+////////                    BABYLON.SceneLoader.Load('/temp/', path, engine, function (newScene) {
+//////                    newScene.activeCamera.attachControl(canvas, false);
+////                    self.engine.runRenderLoop(function () {
+////                        newScene.render();
+////                    });
+////                });
+//
+//                var assetsManager = new BABYLON.AssetsManager(this.scene);
+////                var meshTask = assetsManager.addMeshTask("model task", "sample", "/temp/", "sample.stl");
+//                var meshTask = assetsManager.addMeshTask("model task", "sample", "/temp/", "skull.babylon");
+//                meshTask.onSuccess = function (task) {
+//                        task.loadedMeshes[0].position = BABYLON.Vector3.Zero();
+//                }
+////                // Move the light with the camera
+////                this.scene.registerBeforeRender(function () {
+////                    self.light.position = self.camera.position;
+////                });
+//
+//                assetsManager.onFinish = function (tasks) {
+//                    console.log('Assetmanager finished loading.');
+//                    self.engine.runRenderLoop(function () {
+//                        self.scene.render();
+//                    });
+//                };
+//
+//                console.log('Assetmanager loading ' + this.path + ' ...');
+//                assetsManager.load();
+
+//                this.async(this.notifyResize, 1);
+    },
+
+    _observeDebuggerIndicator: function (debugBabylon) {
+        if (this.scene && this.camera) {
+            console.debug(this.is, debugBabylon ? 'open debugging layer' : 'close debugging layer');
+            if (debugBabylon) {
+                this.scene.debugLayer.show(true, this.camera);
+            } else {
+                this.scene.debugLayer.hide();
+            }
+//            this.debugBabylon = false;
+        }
+    },
+
+    observeScene: function (engine, path) {
+
+//                var self = this;
+//                var canvas = this.$.renderCanvas;
 
 //                if (path) {
-//                    console.debug('Application start render loop from', path);
-//
-//                    BABYLON.SceneLoader.Load('/temp/', path, engine, function (newScene) {
-//                        newScene.activeCamera.attachControl(canvas, false);
-//                        engine.runRenderLoop(function () {
-//                            newScene.render();
-//                        });
+//                console.debug('Application start render loop from', path);
+//                BABYLON.SceneLoader.Load('http://localhost:3000/', path, engine, function (newScene) {
+//                    console.log(newScene);
+////                    });
+//                    self.scene = newScene;
+//                    self.createScreen(engine, newScene);
+//////
+//////                    BABYLON.SceneLoader.Load('/temp/', path, engine, function (newScene) {
+////                    newScene.activeCamera.attachControl(canvas, false);
+//                    engine.runRenderLoop(function () {
+//                        newScene.render();
 //                    });
+//                });
 //                } else {
-                console.debug('Application start render loop.');
+//                console.debug('Application start render loop.');
 
-                engine.runRenderLoop(function () {
-                    scene.render();
-                });
-
+//                engine.runRenderLoop(function () {
+//                    self.scene.render();
+//                });
+//
 //                }
-            },
-            createScreen: function (engine) {
-                console.debug('Application create screen');
+    },
+    createScreen: function (engine, scene) {
+        console.debug('Application create screen');
 
-                // create a basic BJS Scene object
-                this.scene = new BABYLON.Scene(engine);
 
-                // Change the scene background color to green.
+        // Change the scene background color to green.
 //                this.scene.clearColor = new BABYLON.Color3(0, 0, 0);
 
-                // create a FreeCamera, and set its position to (x:0, y:5, z:-10)
-//                this.camera = new BABYLON.FreeCamera('camera1', new BABYLON.Vector3(0, 5, -10), this.scene);
+        // create a FreeCamera, and set its position to (x:0, y:5, z:-10)
+//                this.camera = new BABYLON.FreeCamera('camera1', new BABYLON.Vector3(0, 5, -10), scene);
 
-                //Adding an Arc Rotate Camera
-                this.camera = new BABYLON.ArcRotateCamera("Camera", 0, 0.8, 100, BABYLON.Vector3.Zero(), this.scene);
+        //Adding an Arc Rotate Camera
+        this.camera = new BABYLON.ArcRotateCamera("Camera", 0, 0.8, 100, BABYLON.Vector3.Zero(), scene);
 
-                // target the camera to scene origin
-                this.camera.setTarget(BABYLON.Vector3.Zero());
+        // target the camera to scene origin
+        this.camera.setTarget(BABYLON.Vector3.Zero());
 
-                // attach the camera to the canvas
-                this.camera.attachControl(this.$.renderCanvas, false);
+        // attach the camera to the canvas
+        this.camera.attachControl(this.$.renderCanvas, false);
 
-                // create a basic light, aiming 0,1,0 - meaning, to the sky
-//        this.light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, 0), this.scene);
-                //Adding a light
-                this.light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(20, 20, 100), this.scene);
+//                scene.debugLayer.shouldDisplayLabel = function (node) {
+//                    return true;
+//                };
+//                scene.debugLayer.shouldDisplayAxis = function (mesh) {
+//                    return mesh.name === "sphere1";
+//                };
+        scene.debugLayer.show(true, this.camera);
+
+
+        // create a basic light, aiming 0,1,0 - meaning, to the sky
+        this.light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, 0), scene);
+        //Adding a light
+//                this.light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(20, 20, 100), this.scene);
 // Dim the light a small amount
-                this.light.intensity = 0.5;
-                // create a built-in "sphere" shape; its constructor takes 5 params: name, width, depth, subdivisions, scene
-                this.sphere = BABYLON.Mesh.CreateSphere('sphere1', 16, 2, this.scene);
+        this.light.intensity = 0.5;
+        // create a built-in "sphere" shape; its constructor takes 5 params: name, width, depth, subdivisions, scene
+        this.sphere = BABYLON.Mesh.CreateSphere('sphere1', 16, 2, scene);
 
-                // move the sphere upward 1/2 of its height
-                this.sphere.position.y = 1;
+        // move the sphere upward 1/2 of its height
+        this.sphere.position.y = 1;
 
-                // create a built-in "ground" shape; its constructor takes the same 5 params as the sphere's one
-                this.ground = BABYLON.Mesh.CreateGround('ground1', 6, 6, 4, this.scene);
-            },
-            _onResize: function () {
-                if (this.engine)
-                    this.engine.resize();
-            },
-            _onBeforeUpload: function (event, details) {
-                console.log(event);
-                console.log(details);
-            },
-            /**
-             * Clicks the invisible file input
-             */
+        // create a built-in "ground" shape; its constructor takes the same 5 params as the sphere's one
+        this.ground = BABYLON.Mesh.CreateGround('ground1', 6, 6, 4, scene);
+    },
+    _onResize: function () {
+        if (this.engine)
+            this.engine.resize();
+    },
+//            _onBeforeUpload: function (event, details) {
+//                console.log(event);
+//                console.log(details);
+//            },
+    /**
+     * Clicks the invisible file input
+     */
 //    _fileChange: function () {
 //        var elem = this.$.fileInput;
 //
@@ -146,6 +281,6 @@
 ////            elem.dispatchEvent(evt);
 ////        }
 //    },
-        });
+});
     </script>
 </dom-module>

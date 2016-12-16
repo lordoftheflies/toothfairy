@@ -1,12 +1,20 @@
 {
     "elements": {
         "template": {},
+        "file-upload": {},
+        "app-header-layout": {},
+        "app-toolbar": {},
         "dom-module": {
             "attributes": {
                 "id": {}
             }
         },
-        "toothfairy-app": {}
+        "toothfairy-app": {},
+        "app-header": {}
     },
-    "attributes": {}
+    "attributes": {
+        "include": {
+            "context": "style"
+        }
+    }
 }
