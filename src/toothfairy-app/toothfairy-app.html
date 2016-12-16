@@ -36,7 +36,7 @@
                     <div main-title>Toothfairy</div>
                     <div class="flex"></div>
                     <div id="uploadPanel" class="layout horizontal" hidden>
-                        <file-upload droppable raised multi="false" accept="application/sla" target="http://localhost:3000/upload">Choose bodymodel</file-upload>
+                        <file-upload id="uploader" droppable raised multi="false" accept="application/sla" target="http://localhost:3000/upload">Choose bodymodel</file-upload>
                         <paper-icon-button icon="toothfairy-icons:arrow-back" on-tap="_backToMain"></paper-icon-button>
                     </div>
                     <div id="actionsPanel" class="layout horizontal">
@@ -47,7 +47,7 @@
             </app-header>
             <div class="layout horizontal flex">
                 <div class="layout vertical flex">
-                    <canvas id="renderCanvas"></canvas>
+                    <canvas id="renderCanvas" hidden="[[_canvasVisibilityIndicator]]"></canvas>
                 </div>
             </div>
         </app-header-layout>
@@ -78,12 +78,21 @@ Polymer({
         path: {
             type: String,
             notify: true,
-            value: 'sample.stl'
+//            value: 'sample.stl'
+        },
+        runningBabylon: {
+            type: Boolean,
+            notify: true,
+            value: false
         },
         debugBabylon: {
             type: Boolean,
             notify: true,
             value: false
+        },
+        _canvasVisibilityIndicator: {
+            type: Boolean,
+            computed: '_computeCanvasVisibilityIndicator(path, runningBabylon)'
         }
     },
     observers: [
@@ -92,7 +101,7 @@ Polymer({
     ],
     listeners: {
         'iron-resize': '_onResize',
-        'success': '_onUploadSuccess',
+        'uploader.success': '_onUploadSuccess',
         'babylon-initialize': '_onBabylonInitialize',
         'babylon-load': '_onBabylonLoad',
         'babylon-start': '_onBabylonStart',
@@ -120,8 +129,11 @@ Polymer({
             }
         }
     },
-
+    _computeCanvasVisibilityIndicator: function (path, runningBabylon) {
+        return !(path && runningBabylon);
+    },
     _onBabylonInitialize: function (event, details) {
+        console.debug(this.is, 'initialize babylon', details);
         this.engine = new BABYLON.Engine(this.$.renderCanvas, true);
 
         this.scene = new BABYLON.Scene(this.engine);
@@ -137,13 +149,21 @@ Polymer({
 
         this.assetsManager = new BABYLON.AssetsManager(this.scene);
         var self = this;
+        
+        
         this.assetsManager.onFinish = function (tasks) {
             console.debug('Assets loaded.');
             self.fire('babylon-start', {});
         };
     },
     _onBabylonLoad: function (event, details) {
+        console.debug(this.is, 'load babylon', details);
         var meshTask = this.assetsManager.addMeshTask("asset task", "", "temp/", details.path);
+        var self = this;
+        meshTask.onError = function (tasks) {
+            console.warn('Assets not find.', tasks);
+            self.fire('babylon-stop', {});
+        };
         meshTask.onSuccess = function (task) {
             console.debug('Asset:', task);
                 task.loadedMeshes[0].position = BABYLON.Vector3.Zero();
@@ -151,6 +171,7 @@ Polymer({
         this.assetsManager.load();
     },
     _onBabylonStart: function (event, details) {
+        console.debug(this.is, 'start babylon', details);
         var self = this;
         this.scene.activeCamera.attachControl(this.$.renderCanvas, false);
         this.engine.runRenderLoop(function () {
@@ -158,51 +179,8 @@ Polymer({
         });
     },
     _onBabylonStop: function (event, details) {
+        console.debug(this.is, 'stop babylon', details);
         this.engine.stopRenderLoop();
-    },
-
-    createScreen: function (engine, scene) {
-        console.debug('Application create screen');
-
-
-        // Change the scene background color to green.
-//                this.scene.clearColor = new BABYLON.Color3(0, 0, 0);
-
-        // create a FreeCamera, and set its position to (x:0, y:5, z:-10)
-//                this.camera = new BABYLON.FreeCamera('camera1', new BABYLON.Vector3(0, 5, -10), scene);
-
-        //Adding an Arc Rotate Camera
-        this.camera = new BABYLON.ArcRotateCamera("Camera", 0, 0.8, 100, BABYLON.Vector3.Zero(), scene);
-
-        // target the camera to scene origin
-        this.camera.setTarget(BABYLON.Vector3.Zero());
-
-        // attach the camera to the canvas
-        this.camera.attachControl(this.$.renderCanvas, false);
-
-//                scene.debugLayer.shouldDisplayLabel = function (node) {
-//                    return true;
-//                };
-//                scene.debugLayer.shouldDisplayAxis = function (mesh) {
-//                    return mesh.name === "sphere1";
-//                };
-        scene.debugLayer.show(true, this.camera);
-
-
-        // create a basic light, aiming 0,1,0 - meaning, to the sky
-        this.light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, 0), scene);
-        //Adding a light
-//                this.light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(20, 20, 100), this.scene);
-// Dim the light a small amount
-        this.light.intensity = 0.5;
-        // create a built-in "sphere" shape; its constructor takes 5 params: name, width, depth, subdivisions, scene
-        this.sphere = BABYLON.Mesh.CreateSphere('sphere1', 16, 2, scene);
-
-        // move the sphere upward 1/2 of its height
-        this.sphere.position.y = 1;
-
-        // create a built-in "ground" shape; its constructor takes the same 5 params as the sphere's one
-        this.ground = BABYLON.Mesh.CreateGround('ground1', 6, 6, 4, scene);
     },
     _showUpload: function () {
         this.$.uploadPanel.hidden = false;
@@ -217,8 +195,13 @@ Polymer({
             this.engine.resize();
     },
     _onUploadSuccess: function (event, details) {
-//        console.debug(event);
-        console.debug(details);
+        console.debug(this.is, 'uploaded', details);
+        this.fire('babylon-stop', {});
+        this.runningBabylon = true;
+        this.assetsManager.reset();
+        this.fire('babylon-load', {
+            path: JSON.parse(details.xhr.response).name
+        });
     },
     /**
      * Clicks the invisible file input
