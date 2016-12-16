@@ -32,6 +32,12 @@ Features:
 
 First, make sure you have the [Polymer CLI](https://www.npmjs.com/package/polymer-cli) installed. Then run `polymer serve` to serve your application locally.
 
+### Install bower modules
+
+```
+$ bower install
+```
+
 ### Viewing Your Application
 
 ```
