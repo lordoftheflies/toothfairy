@@ -69,6 +69,9 @@ Polymer({
         scene: {
             type: Object
         },
+        assetsManager: {
+            type: Object
+        },
         camera: {
             type: Object
         },
@@ -84,62 +87,29 @@ Polymer({
         }
     },
     observers: [
-//        'observeScene(engine, path)',
+        '_observePath(assetsManager, path)',
         '_observeDebuggerIndicator(debugBabylon)'
     ],
     listeners: {
         'iron-resize': '_onResize',
-        'success': '_onUploadSuccess'
+        'success': '_onUploadSuccess',
+        'babylon-initialize': '_onBabylonInitialize',
+        'babylon-load': '_onBabylonLoad',
+        'babylon-start': '_onBabylonStart',
+        'babylon-stop': '_onBabylonStop'
     },
     attached: function () {
-        // load the Babylon 3D engine
-        this.engine = new BABYLON.Engine(this.$.renderCanvas, true);
-
-        this.scene = new BABYLON.Scene(this.engine);
-        // Adding a light
-        var light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(20, 20, 100), this.scene);
-        // Adding an Arc Rotate Camera
-        this.camera = new BABYLON.ArcRotateCamera("Camera", 0, 0.8, 1000, BABYLON.Vector3.Zero(), this.scene);
-        this.camera.attachControl(this.$.renderCanvas, false);
-
-
-//                this.createScreen(engine, scene);
-        var self = this;
-//                BABYLON.SceneLoader.Load('/temp/', 'sample.stl', engine, function (newScene) {
-//                    console.log(newScene);
-////                    });
-//                    self.scene = newScene;
-//                    self.createScreen(engine, newScene);
-//////
-//////                    BABYLON.SceneLoader.Load('/temp/', path, engine, function (newScene) {
-////                    self.camera.attachControl(canvas, false);
-//                    engine.runRenderLoop(function () {
-//                        newScene.render();
-//                    });
-//                });
-        var assetsManager = new BABYLON.AssetsManager(this.scene);
-        var meshTask = assetsManager.addMeshTask("asset task", "", "temp/", "sample.stl");
-        meshTask.onSuccess = function (task) {
-            console.debug('Asset:', task);
-                task.loadedMeshes[0].position = BABYLON.Vector3.Zero();
-        }
-        // Move the light with the camera
-        this.scene.registerBeforeRender(function () {
-            light.position = self.camera.position;
-        });
-        var canvas = this.$.renderCanvas;
-        assetsManager.onFinish = function (tasks) {
-            console.debug('Assets loaded.');
-            self.scene.activeCamera.attachControl(canvas, false);
-            self.engine.runRenderLoop(function () {
-                self.scene.render();
-            });
-        };
-        assetsManager.load();
+        this.fire('babylon-initialize', {});
 
         this.async(this.notifyResize, 1);
     },
 
+    _observePath: function (assetsManager, path) {
+        
+        this.fire('babylon-load', {
+            path: path
+        });
+    },
     _observeDebuggerIndicator: function (debugBabylon) {
         if (this.scene && this.camera) {
             console.debug(this.is, debugBabylon ? 'open debugging layer' : 'close debugging layer');
@@ -150,6 +120,47 @@ Polymer({
             }
         }
     },
+
+    _onBabylonInitialize: function (event, details) {
+        this.engine = new BABYLON.Engine(this.$.renderCanvas, true);
+
+        this.scene = new BABYLON.Scene(this.engine);
+
+        this.camera = new BABYLON.ArcRotateCamera("Camera", 0, 0.8, 1000, BABYLON.Vector3.Zero(), this.scene);
+        this.camera.attachControl(this.$.renderCanvas, false);
+
+        var light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(20, 20, 100), this.scene);
+        // Move the light with the camera
+        this.scene.registerBeforeRender(function () {
+            light.position = self.camera.position;
+        });
+
+        this.assetsManager = new BABYLON.AssetsManager(this.scene);
+        var self = this;
+        this.assetsManager.onFinish = function (tasks) {
+            console.debug('Assets loaded.');
+            self.fire('babylon-start', {});
+        };
+    },
+    _onBabylonLoad: function (event, details) {
+        var meshTask = this.assetsManager.addMeshTask("asset task", "", "temp/", details.path);
+        meshTask.onSuccess = function (task) {
+            console.debug('Asset:', task);
+                task.loadedMeshes[0].position = BABYLON.Vector3.Zero();
+        };
+        this.assetsManager.load();
+    },
+    _onBabylonStart: function (event, details) {
+        var self = this;
+        this.scene.activeCamera.attachControl(this.$.renderCanvas, false);
+        this.engine.runRenderLoop(function () {
+            self.scene.render();
+        });
+    },
+    _onBabylonStop: function (event, details) {
+        this.engine.stopRenderLoop();
+    },
+
     createScreen: function (engine, scene) {
         console.debug('Application create screen');
 
