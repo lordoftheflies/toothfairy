@@ -68,6 +68,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             pattern="/:page"
             data="{{routeData}}"
             tail="{{subroute}}"></app-route>
+<!--        <app-route
+            route="{{route}}"
+            pattern="/model-view/:model_id"
+            data="{{routeData}}"></app-route>-->
+        <!--        <app-route
+                    route="{{subroute}}"
+                    pattern="/:model_id"
+                    data="{{routeData}}"></app-route>-->
 
         <app-drawer-layout fullbleed>
             <!-- Drawer content -->
@@ -97,7 +105,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     fallback-selection="view404"
                     role="main">
                     <toothfairy-upload-view name="upload-view"></toothfairy-upload-view>
-                    <toothfairy-model-view name="model-view"></toothfairy-model-view>
+                    <toothfairy-model-view name="model-view" route="{{subroute}}"></toothfairy-model-view>
                     <toothfairy-model-listview name="model-listview" files="[[files]]"></toothfairy-model-listview>
                     <toothfairy-view404 name="view404"></toothfairy-view404>
                 </iron-pages>
