@@ -1,87 +1,70 @@
-# Polymer App Toolbox - Starter Kit
+# \<toothfairy\>
 
-[![Build Status](https://travis-ci.org/PolymerElements/polymer-starter-kit.svg?branch=master)](https://travis-ci.org/PolymerElements/polymer-starter-kit)
+Application for designing specific modification 3D model.
 
-This template is a starting point for building apps using a drawer-based
-layout. The layout is provided by `app-layout` elements.
+## Server
 
-This template, along with the `polymer-cli` toolchain, also demonstrates use
-of the "PRPL pattern" This pattern allows fast first delivery and interaction with
-the content at the initial route requested by the user, along with fast subsequent
-navigation by pre-caching the remaining components required by the app and
-progressively loading them on-demand as the user navigates through the app.
+Features:
 
-The PRPL pattern, in a nutshell:
+* Handle frontend file upload.
 
-* **Push** components required for the initial route
-* **Render** initial route ASAP
-* **Pre-cache** components for remaining routes
-* **Lazy-load** and progressively upgrade next routes on-demand
+### Install npm dependecies
 
-### Migrating from Polymer Starter Kit v1?
+```
+$ npm install
+```
 
-[Check out our blog post that covers what's changed in PSK2 and how to migrate!](https://www.polymer-project.org/1.0/blog/2016-08-18-polymer-starter-kit-or-polymer-cli.html)
+### Start the server
 
-### Setup
+```
+$ npm start
+```
 
-##### Prerequisites
+## Frontend
 
-First, install [Polymer CLI](https://github.com/Polymer/polymer-cli) using
-[npm](https://www.npmjs.com) (we assume you have pre-installed [node.js](https://nodejs.org)).
+Features:
 
-    npm install -g polymer-cli
+* Upload ASCII STL models to the server.
+* Display ASCII STL model for design
+* Scene debugging
 
-##### Initialize project from template
+### Install the Polymer-CLI
 
-    mkdir my-app
-    cd my-app
-    polymer init starter-kit
+First, make sure you have the [Polymer CLI](https://www.npmjs.com/package/polymer-cli) installed. Then run `polymer serve` to serve your application locally.
 
-### Start the development server
+### Install bower modules
 
-This command serves the app at `http://localhost:8080` and provides basic URL
-routing for the app:
+```
+$ bower install
+```
 
-    polymer serve --open
+### Viewing Your Application
 
-### Build
+```
+$ polymer serve
+```
 
-This command performs HTML, CSS, and JS minification on the application
-dependencies, and generates a service-worker.js file with code to pre-cache the
-dependencies based on the entrypoint and fragments specified in `polymer.json`.
-The minified files are output to the `build/unbundled` folder, and are suitable
-for serving from a HTTP/2+Push compatible server.
+### Building Your Application
 
-In addition the command also creates a fallback `build/bundled` folder,
-generated using fragment bundling, suitable for serving from non
-H2/push-compatible servers or to clients that do not support H2/Push.
+```
+$ polymer build
+```
 
-    polymer build
+This will create a `build/` folder with `bundled/` and `unbundled/` sub-folders
+containing a bundled (Vulcanized) and unbundled builds, both run through HTML,
+CSS, and JS optimizers.
 
-### Preview the build
+You can serve the built versions by giving `polymer serve` a folder to serve
+from:
 
-This command serves the minified version of the app at `http://localhost:8080`
-in an unbundled state, as it would be served by a push-compatible server:
+```
+$ polymer serve build/bundled
+```
 
-    polymer serve build/unbundled
+### Running Tests
 
-This command serves the minified version of the app at `http://localhost:8080`
-generated using fragment bundling:
+```
+$ polymer test
+```
 
-    polymer serve build/bundled
-
-### Run tests
-
-This command will run [Web Component Tester](https://github.com/Polymer/web-component-tester)
-against the browsers currently installed on your machine:
-
-    polymer test
-
-### Adding a new view
-
-You can extend the app by adding more views that will be demand-loaded
-e.g. based on the route, or to progressively render non-critical sections of the
-application. Each new demand-loaded fragment should be added to the list of
-`fragments` in the included `polymer.json` file. This will ensure those
-components and their dependencies are added to the list of pre-cached components
-and will be included in the `bundled` build.
+Your application is already set up to be tested via [web-component-tester](https://github.com/Polymer/web-component-tester). Run `polymer test` to run your application's test suite locally.
