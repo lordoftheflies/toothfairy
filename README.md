@@ -2,17 +2,49 @@
 
 Application for designing specific modification 3D model.
 
-## Install the Polymer-CLI
+## Server
+
+Features:
+
+* Handle frontend file upload.
+
+### Install npm dependecies
+
+```
+$ npm install
+```
+
+### Start the server
+
+```
+$ npm start
+```
+
+## Frontend
+
+Features:
+
+* Upload ASCII STL models to the server.
+* Display ASCII STL model for design
+* Scene debugging
+
+### Install the Polymer-CLI
 
 First, make sure you have the [Polymer CLI](https://www.npmjs.com/package/polymer-cli) installed. Then run `polymer serve` to serve your application locally.
 
-## Viewing Your Application
+### Install bower modules
+
+```
+$ bower install
+```
+
+### Viewing Your Application
 
 ```
 $ polymer serve
 ```
 
-## Building Your Application
+### Building Your Application
 
 ```
 $ polymer build
@@ -29,7 +61,7 @@ from:
 $ polymer serve build/bundled
 ```
 
-## Running Tests
+### Running Tests
 
 ```
 $ polymer test
