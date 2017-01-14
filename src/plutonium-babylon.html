@@ -146,7 +146,18 @@
             },
             _onBabylonLoad: function (event, details) {
                 console.debug(this.is, 'load babylon', details);
-                var meshTask = this.assetsManager.addMeshTask("asset task", "", "../temp/", details.path);
+
+                var modelMesh = this.scene.getNodeByName('Mesh');
+                while (modelMesh) {
+                    console.debug(this.is, 'dispose earlier model.');
+                    this.scene.removeMesh(modelMesh);
+                    modelMesh.dispose();
+                    modelMesh = this.scene.getNodeByName('Mesh');
+                    
+                }
+                this.assetsManager.reset();
+//                
+                var meshTask = this.assetsManager.addMeshTask("asset task", ['model'], "../temp/", details.path);
                 var self = this;
                 meshTask.onError = function (tasks) {
                     console.warn('Assets not find.', tasks);
@@ -154,7 +165,7 @@
                 };
                 meshTask.onSuccess = function (task) {
                     console.debug('Asset:', task);
-                        task.loadedMeshes[0].position = BABYLON.Vector3.Zero();
+                    task.loadedMeshes[0].position = BABYLON.Vector3.Zero();
                 };
                 this.assetsManager.load();
             },
