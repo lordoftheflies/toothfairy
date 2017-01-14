@@ -39,7 +39,7 @@
     </template>
 
     <!--<script src="../../bower_components/babylonjs/dist/babylon.2.5.js"></script>-->
-    <script src="../../babylon.custom.js"></script>
+    <script src="../babylon.custom.js"></script>
 
     <script>
         Polymer({
@@ -61,6 +61,7 @@
                 camera: {
                     type: Object
                 },
+
                 path: {
                     type: String,
                     notify: true,
@@ -87,7 +88,7 @@
             ],
             listeners: {
                 'iron-resize': '_onResize',
-                'uploader.success': '_onUploadSuccess',
+//                'uploader.success': '_onUploadSuccess',
                 'babylon-initialize': '_onBabylonInitialize',
                 'babylon-load': '_onBabylonLoad',
                 'babylon-start': '_onBabylonStart',
@@ -95,6 +96,7 @@
             },
             attached: function () {
                 this.fire('babylon-initialize', {});
+                this.runningBabylon = true;
 
                 this.async(this.notifyResize, 1);
             },
@@ -144,7 +146,7 @@
             },
             _onBabylonLoad: function (event, details) {
                 console.debug(this.is, 'load babylon', details);
-                var meshTask = this.assetsManager.addMeshTask("asset task", "", "temp/", details.path);
+                var meshTask = this.assetsManager.addMeshTask("asset task", "", "../temp/", details.path);
                 var self = this;
                 meshTask.onError = function (tasks) {
                     console.warn('Assets not find.', tasks);
@@ -168,32 +170,31 @@
                 console.debug(this.is, 'stop babylon', details);
                 this.engine.stopRenderLoop();
             },
-            _showUpload: function () {
-                this.$.uploadPanel.hidden = false;
-                this.$.actionsPanel.hidden = true;
-            },
-            _backToMain: function () {
-                this.$.uploadPanel.hidden = true;
-                this.$.actionsPanel.hidden = false;
-            },
+//            _showUpload: function () {
+//                this.$.uploadPanel.hidden = false;
+//                this.$.actionsPanel.hidden = true;
+//            },
+//            _backToMain: function () {
+//                this.$.uploadPanel.hidden = true;
+//                this.$.actionsPanel.hidden = false;
+//            },
             _onResize: function () {
                 if (this.engine)
                     this.engine.resize();
             },
-            _onUploadSuccess: function (event, details) {
-                console.debug(this.is, 'uploaded', details);
-                this.fire('babylon-stop', {});
-                this.runningBabylon = true;
-                this.assetsManager.reset();
-                this.fire('babylon-load', {
-                    path: JSON.parse(details.xhr.response).name
-                });
-            },
-
-            _onModelListResponse: function (event, data) {
-                console.debug(this.is, 'Fetched model list.');
-                this.$.appLayout.notifyResize();
-            }
+//            _onUploadSuccess: function (event, details) {
+//                console.debug(this.is, 'uploaded', details);
+//                this.fire('babylon-stop', {});
+//                this.assetsManager.reset();
+//                this.fire('babylon-load', {
+//                    path: JSON.parse(details.xhr.response).name
+//                });
+//            },
+//
+//            _onModelListResponse: function (event, data) {
+//                console.debug(this.is, 'Fetched model list.');
+//                this.$.appLayout.notifyResize();
+//            }
             /**
              * Clicks the invisible file input
              */

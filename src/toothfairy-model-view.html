@@ -20,8 +20,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <style include="shared-styles">
             :host {
                 display: block;
-
+                
                 padding: 10px;
+            }
+            
+            #screen {
+                height: 600px;
             }
         </style>
         <app-route
@@ -33,7 +37,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <div class="card">
             <div class="circle">M</div>
             <h1>[[routeData.model_id]]</h1>
-            <div is="plutonium-babylon" path="[[routeData.model_id]]"></div>
+            <div id="screen" is="plutonium-babylon" path="[[routeData.model_id]]"></div>
         </div>
     </template>
 
