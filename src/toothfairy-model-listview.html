@@ -1,0 +1,60 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-styles/paper-styles-classes.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="toothfairy-model-listview">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+
+                padding: 10px;
+            }
+            
+            div.card {
+                margin-bottom: 1000px;
+            }
+        </style>
+        
+
+        <h1>Models</h1>
+
+        <paper-listbox id="menuList" 
+                   class="card"
+                   selected="[[page]]" 
+                   attr-for-selected="name" 
+                   class="drawer-list" 
+                   role="navigation" 
+                   items="[[files]]" 
+                   selection-enabled>
+            <template is="dom-repeat" items="[[files]]">
+            <!--<template>-->
+                    <a name="[[item]]" href="/model-view/[[item]]" class="paper-font-menu">
+                        <paper-item>[[item]]</paper-item>
+                    </a>
+            </template>
+
+        </paper-listbox>
+    </template>
+
+    <script>
+        Polymer({
+            is: 'toothfairy-model-listview',
+
+        });
+    </script>
+</dom-module>

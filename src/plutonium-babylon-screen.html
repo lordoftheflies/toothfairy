@@ -2,9 +2,14 @@
 <link rel="import" href="../../bower_components/app-layout/app-header-layout/app-header-layout.html">
 <link rel="import" href="../../bower_components/app-layout/app-header/app-header.html">
 <link rel="import" href="../../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
+<link rel="import" href="../../bower_components/app-layout/app-drawer/app-drawer.html">
 <link rel="import" href="../../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
+<link rel="import" href="../../bower_components/iron-list/iron-list.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../../bower_components/iron-resizable-behavior/iron-resizable-behavior.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/paper-styles/paper-styles-classes.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
@@ -12,7 +17,7 @@
 
 <link rel="import" href="../toothfairy-icons.html">
 
-<dom-module id="toothfairy-app">
+<dom-module id="plutonium-babylon-screen">
     <template>
         <style include="iron-flex iron-flex-alignment">
             :host {
@@ -23,6 +28,23 @@
                 margin  : 0;
                 padding : 0;
             }
+            
+            .drawer-list {
+                margin: 0 20px;
+            }
+
+            .drawer-list a {
+                display: block;
+                /*padding: 0 16px;*/
+                text-decoration: none;
+                color: var(--app-secondary-color);
+                line-height: 40px;
+            }
+
+            .drawer-list a.iron-selected {
+                /*color: black;*/
+                font-weight: bold;
+            }
 
             #renderCanvas {
                 width   : 100%;
@@ -30,27 +52,49 @@
                 touch-action: none;
             }
         </style>
-        <app-header-layout fullbleed class="layout horizontal">
-            <app-header fixed condenses effects="waterfall">
-                <app-toolbar class="layout horizontal">
-                    <div main-title>Toothfairy</div>
-                    <div class="flex"></div>
-                    <div id="uploadPanel" class="layout horizontal" hidden>
-                        <file-upload id="uploader" droppable raised multi="false" accept="application/sla" target="http://localhost:3000/upload">Choose bodymodel</file-upload>
-                        <paper-icon-button icon="toothfairy-icons:arrow-back" on-tap="_backToMain"></paper-icon-button>
-                    </div>
-                    <div id="actionsPanel" class="layout horizontal">
-                        <paper-icon-button icon="toothfairy-icons:file-upload" on-tap="_showUpload"></paper-icon-button>
-                        <paper-toggle-button checked="{{debugBabylon}}">Debug</paper-toggle-button>
-                    </div>
+        <iron-ajax url="http://localhost:3000/list" last-response="{{files}}" auto on-response="_onModelListResponse"></iron-ajax>
+        <app-drawer-layout id="appLayout" fullbleed>
+            <app-drawer>
+                <app-toolbar>
+                    Menu
                 </app-toolbar>
-            </app-header>
-            <div class="layout horizontal flex">
-                <div class="layout vertical flex">
-                    <canvas id="renderCanvas" hidden="[[_canvasVisibilityIndicator]]"></canvas>
+                <iron-list id="menuList" 
+                           selected="[[page]]" 
+                           attr-for-selected="name" 
+                           class="drawer-list" 
+                           role="navigation" 
+                           items="[[mainMenus]]" 
+                           as="menu" 
+                           selection-enabled>
+                    <template is="dom-repeat" items="[[files]]">
+                        <a name="[[item]]" href="/[[item]]" class="paper-font-menu layout horizontal">[[item]]</a>
+                    </template>
+                </iron-list>
+
+            </app-drawer>
+            <app-header-layout class="layout horizontal">
+                <app-header fixed condenses effects="waterfall">
+                    <app-toolbar class="layout horizontal">
+                        <paper-icon-button icon="toothfairy-icons:menu" drawer-toggle></paper-icon-button>
+                        <div main-title>Toothfairy</div>
+                        <div class="flex"></div>
+                        <div id="uploadPanel" class="layout horizontal" hidden>
+                            <file-upload id="uploader" droppable raised multi="false" accept="application/sla" target="http://localhost:3000/upload">Choose bodymodel</file-upload>
+                            <paper-icon-button icon="toothfairy-icons:arrow-back" on-tap="_backToMain"></paper-icon-button>
+                        </div>
+                        <div id="actionsPanel" class="layout horizontal">
+                            <paper-icon-button icon="toothfairy-icons:file-upload" on-tap="_showUpload"></paper-icon-button>
+                            <paper-toggle-button checked="{{debugBabylon}}">Debug</paper-toggle-button>
+                        </div>
+                    </app-toolbar>
+                </app-header>
+                <div class="layout horizontal flex">
+                    <div class="layout vertical flex">
+                        <canvas id="renderCanvas" hidden="[[_canvasVisibilityIndicator]]"></canvas>
+                    </div>
                 </div>
-            </div>
-        </app-header-layout>
+            </app-header-layout>
+        </app-drawer-layout>
     </template>
 
     <!--<script src="../../bower_components/babylonjs/dist/babylon.2.5.js"></script>-->
@@ -58,7 +102,7 @@
 
     <script>
 Polymer({
-    is: 'toothfairy-app',
+    is: 'plutonium-babylon-screen',
     behaviors: [
         Polymer.IronResizableBehavior
     ],
@@ -114,7 +158,7 @@ Polymer({
     },
 
     _observePath: function (assetsManager, path) {
-        
+
         this.fire('babylon-load', {
             path: path
         });
@@ -138,7 +182,7 @@ Polymer({
 
         this.scene = new BABYLON.Scene(this.engine);
 
-        this.camera = new BABYLON.ArcRotateCamera("Camera", 0, 0.8, 1000, BABYLON.Vector3.Zero(), this.scene);
+        this.camera = new BABYLON.ArcRotateCamera("Camera", 0, 0.8, 20, BABYLON.Vector3.Zero(), this.scene);
         this.camera.attachControl(this.$.renderCanvas, false);
 
         var light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(20, 20, 100), this.scene);
@@ -149,8 +193,8 @@ Polymer({
 
         this.assetsManager = new BABYLON.AssetsManager(this.scene);
         var self = this;
-        
-        
+
+
         this.assetsManager.onFinish = function (tasks) {
             console.debug('Assets loaded.');
             self.fire('babylon-start', {});
@@ -203,6 +247,11 @@ Polymer({
             path: JSON.parse(details.xhr.response).name
         });
     },
+
+    _onModelListResponse: function (event, data) {
+        console.debug(this.is, 'Fetched model list.');
+        this.$.appLayout.notifyResize();
+    }
     /**
      * Clicks the invisible file input
      */
