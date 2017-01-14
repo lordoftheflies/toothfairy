@@ -14,7 +14,9 @@
     "iron-icon": "polymerelements/iron-icon#^1.0.12",
     "iron-iconset-svg": "polymerelements/iron-iconset-svg#^1.1.0",
     "paper-toggle-button": "polymerelements/paper-toggle-button#^1.2.1",
-    "iron-ajax": "polymerelements/iron-ajax#^1.4.3"
+    "iron-ajax": "polymerelements/iron-ajax#^1.4.3",
+    "paper-item": "PolymerElements/paper-item#^1.2.1",
+    "iron-list": "PolymerElements/iron-list#^1.3.15"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
