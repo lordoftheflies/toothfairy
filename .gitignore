@@ -41,5 +41,5 @@ jspm_packages
 
 # Netbeans private repository
 /nbproject/private/
-/temp/
+#/temp/
 /specs/
