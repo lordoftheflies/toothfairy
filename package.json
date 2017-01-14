@@ -1,32 +1,13 @@
 {
-  "name": "toothfairy-local-server",
-  "version": "1.0.0",
-  "description": "Local NodeJS server for the application.",
-  "main": "server.js",
-  "directories": {
-    "test": "test"
+  "name": "polymer-starter-kit",
+  "license": "BSD-3-Clause",
+  "devDependencies": {
+    "eslint": "^3.12.0",
+    "eslint-config-google": "^0.7.1",
+    "eslint-plugin-html": "^1.7.0"
   },
   "scripts": {
-    "test": "test",
-    "start": "node server.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/lordoftheflies/toothfairy.git"
-  },
-  "keywords": [
-    "server"
-  ],
-  "author": "lordoftheflies",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/lordoftheflies/toothfairy/issues"
-  },
-  "homepage": "https://github.com/lordoftheflies/toothfairy#readme",
-  "dependencies": {
-    "express": "^4.14.0",
-    "formidable": "^1.0.17",
-    "jsonfile": "^2.4.0",
-    "multer": "^1.2.0"
+    "lint": "eslint . --ext js,html --ignore-path .gitignore",
+    "test": "npm run lint && polymer test"
   }
 }
