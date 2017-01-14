@@ -41,7 +41,7 @@ $ bower install
 ### Viewing Your Application
 
 ```
-$ polymer serve
+$ npm start
 ```
 
 ### Building Your Application
